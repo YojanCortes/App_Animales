@@ -37,9 +37,18 @@
     const serviceWorkerVersion = null;
   </script>
   <!-- Google Maps SDK para desarrollo en Web -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY_AQUI"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSqqVvn-g_Rf4mGxEzxDzBRerc4_AFWus"></script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
+  <style>
+    /* Ocultar todos los botones por defecto de Google Maps en Web (Fullscreen, MapType, etc.) */
+    .gmnoprint {
+      display: none !important;
+    }
+    .gm-fullscreen-control {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
   <script>

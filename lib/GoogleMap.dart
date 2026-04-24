@@ -22,6 +22,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   Position? currentPosition;
   double radioSeleccionado = 200.0;
   DateTime lastUpdate = DateTime.now();
+  MapType _currentMapType = MapType.normal;
 
   @override
   void initState() {
@@ -293,27 +294,139 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
-      body: Stack(
+      body: Column(
         children: [
-          Column(
-            children: [
-              // Mapa
-              Expanded(
-                child: GoogleMap(
+          Expanded(
+            child: Stack(
+              children: [
+                // Mapa principal
+                GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     mapController = controller;
-                    controller.setMapStyle(_mapStyle);
                   },
                   initialCameraPosition: CameraPosition(
                     target: widget.initialPosition,
-                    zoom: 12.0,
+                    zoom: 15.0,
                   ),
                   myLocationEnabled: true,
                   myLocationButtonEnabled: false,
-                  mapType: MapType.normal,
+                  zoomControlsEnabled: false,
+                  mapToolbarEnabled: false,
+                  compassEnabled: false,
+                  mapType: _currentMapType,
                   markers: markers,
+                  circles: currentPosition != null
+                      ? {
+                          Circle(
+                            circleId: const CircleId('radius'),
+                            center: LatLng(currentPosition!.latitude, currentPosition!.longitude),
+                            radius: radioSeleccionado,
+                            fillColor: const Color(0xFF2ECC89).withOpacity(0.1),
+                            strokeColor: const Color(0xFF2ECC89),
+                            strokeWidth: 2,
+                          ),
+                        }
+                      : {},
                 ),
-              ),
+                
+                // Selector Mapa / Satélite
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onTap: () => setState(() => _currentMapType = MapType.normal),
+                          child: Container(
+                            width: 80,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            child: Text('Mapa', style: GoogleFonts.inter(color: _currentMapType == MapType.normal ? Colors.blue : Colors.black87, fontWeight: FontWeight.w600, fontSize: 13)),
+                          ),
+                        ),
+                        Container(height: 1, width: 80, color: Colors.grey.shade200),
+                        InkWell(
+                          onTap: () => setState(() => _currentMapType = MapType.satellite),
+                          child: Container(
+                            width: 80,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            child: Text('Satélite', style: GoogleFonts.inter(color: _currentMapType == MapType.satellite ? Colors.blue : Colors.black87, fontSize: 13)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Botones de Zoom
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                    ),
+                    child: Column(
+                      children: [
+                        InkWell(
+                          onTap: () => mapController?.animateCamera(CameraUpdate.zoomIn()),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Icon(Icons.add, color: Colors.black87, size: 20),
+                          ),
+                        ),
+                        Container(height: 1, width: 40, color: Colors.grey.shade200),
+                        InkWell(
+                          onTap: () => mapController?.animateCamera(CameraUpdate.zoomOut()),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Icon(Icons.remove, color: Colors.black87, size: 20),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Botón Mi Ubicación
+                Positioned(
+                  bottom: 24,
+                  right: 16,
+                  child: InkWell(
+                    onTap: () {
+                      if (currentPosition != null) {
+                        mapController?.animateCamera(
+                          CameraUpdate.newLatLngZoom(
+                            LatLng(currentPosition!.latitude, currentPosition!.longitude),
+                            16.0,
+                          ),
+                        );
+                      } else {
+                        _getCurrentLocation();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                      ),
+                      child: const Icon(Icons.my_location, color: Colors.blue, size: 24),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Filter Bar
           Container(
             width: double.infinity,
@@ -333,99 +446,66 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
                   _buildFilterChip('500m', 500.0),
                   _buildFilterChip('1km', 1000.0),
                   _buildFilterChip('5km', 5000.0),
-                  _buildFilterChip('Ver Todos', double.infinity),
                 ],
               ),
             ),
           ),
-              // Info Panel
-              Container(
-                width: double.infinity,
-                color: AppTheme.bgDark,
-                padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
-                child: Column(
+          // Info Panel
+          Container(
+            width: double.infinity,
+            color: AppTheme.bgDark,
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Mascotas cercanas', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 12)),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accent.withOpacity(0.15),
-                            border: Border.all(color: AppTheme.accent.withOpacity(0.3)),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '${markers.length} en ${_getRadioText()}',
-                            style: GoogleFonts.dmSans(color: AppTheme.accent, fontSize: 11, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(color: AppTheme.border, height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Última actualización', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 12)),
-                        Text(_getRelativeTime(), style: GoogleFonts.dmSans(color: AppTheme.textPrimaryNew, fontSize: 12, fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    InkWell(
-                      onTap: () {
-                        // Acción para ver lista (podría llevar a MascotasPage)
-                      },
-                      borderRadius: BorderRadius.circular(14),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(9),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppTheme.borderLight),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.grid_view_rounded, size: 14, color: AppTheme.textMuted),
-                            const SizedBox(width: 7),
-                            Text('Ver lista completa', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500)),
-                          ],
-                        ),
+                    Text('Mascotas cercanas', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 12)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accent.withOpacity(0.15),
+                        border: Border.all(color: AppTheme.accent.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '${markers.length} en ${_getRadioText()}',
+                        style: GoogleFonts.dmSans(color: AppTheme.accent, fontSize: 11, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          // Zoom buttons
-          Positioned(
-            right: 14,
-            bottom: 240,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  onPressed: () {
-                    mapController?.animateCamera(CameraUpdate.zoomIn());
-                  },
-                  mini: true,
-                  backgroundColor: AppTheme.bgDeep,
-                  foregroundColor: AppTheme.accent,
-                  elevation: 0,
-                  child: const Icon(Icons.add),
+                const Divider(color: AppTheme.border, height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Última actualización', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 12)),
+                    Text(_getRelativeTime(), style: GoogleFonts.dmSans(color: AppTheme.textPrimaryNew, fontSize: 12, fontWeight: FontWeight.w500)),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                FloatingActionButton(
-                  onPressed: () {
-                    mapController?.animateCamera(CameraUpdate.zoomOut());
+                const SizedBox(height: 10),
+                InkWell(
+                  onTap: () {
+                    // Acción para ver lista
                   },
-                  mini: true,
-                  backgroundColor: AppTheme.bgDeep,
-                  foregroundColor: AppTheme.accent,
-                  elevation: 0,
-                  child: const Icon(Icons.remove),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppTheme.borderLight),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.grid_view_rounded, size: 14, color: AppTheme.textMuted),
+                        const SizedBox(width: 7),
+                        Text('Ver lista completa', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
