@@ -4,21 +4,24 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:appanimales/theme/app_theme.dart';
 
 class GoogleMapPage extends StatefulWidget {
   final LatLng initialPosition;
 
-  GoogleMapPage({required this.initialPosition});
+  const GoogleMapPage({super.key, required this.initialPosition});
 
   @override
   _GoogleMapPageState createState() => _GoogleMapPageState();
 }
 
 class _GoogleMapPageState extends State<GoogleMapPage> {
-  late GoogleMapController mapController;
+  GoogleMapController? mapController;
   Set<Marker> markers = {};
   Position? currentPosition;
   double radioSeleccionado = 200.0;
+  DateTime lastUpdate = DateTime.now();
 
   @override
   void initState() {
@@ -47,7 +50,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
 
       await _loadLostAnimals();
 
-      mapController.animateCamera(
+      mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(position.latitude, position.longitude),
           15.0,
@@ -81,7 +84,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
           double latitude = ubicacionPerdida['latitude'];
           double longitude = ubicacionPerdida['longitude'];
 
-          double distancia = await Geolocator.distanceBetween(
+          double distancia = Geolocator.distanceBetween(
             position.latitude,
             position.longitude,
             latitude,
@@ -109,10 +112,26 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
         }
       }
 
-      setState(() {});
+      setState(() {
+        lastUpdate = DateTime.now();
+      });
     } catch (e) {
       print('Error loading lost animals: $e');
     }
+  }
+
+  String _getRelativeTime() {
+    Duration diff = DateTime.now().difference(lastUpdate);
+    if (diff.inSeconds < 60) return 'Hace unos segundos';
+    if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes} minuto${diff.inMinutes > 1 ? 's' : ''}';
+    if (diff.inHours < 24) return 'Hace ${diff.inHours} hora${diff.inHours > 1 ? 's' : ''}';
+    return 'Hace ${diff.inDays} día${diff.inDays > 1 ? 's' : ''}';
+  }
+
+  String _getRadioText() {
+    if (radioSeleccionado == double.infinity) return 'Todos';
+    if (radioSeleccionado >= 1000) return '${(radioSeleccionado / 1000).toStringAsFixed(0)}km';
+    return '${radioSeleccionado.toStringAsFixed(0).replaceAll('.0', '')}m';
   }
 
   void _showAnimalDetailsPopup(
@@ -125,26 +144,26 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
             borderRadius: BorderRadius.circular(16.0),
           ),
           child: Container(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   document['nombre'] ?? 'Animal Perdido',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 10.0),
+                const SizedBox(height: 10.0),
                 Image.network(
                   document['imagen'] ?? '',
                   width: 150,
                   height: 150,
                   fit: BoxFit.cover,
                 ),
-                SizedBox(height: 10.0),
+                const SizedBox(height: 10.0),
                 Text('Descripción: ${document['descripcion'] ?? ''}'),
                 Text('Edad: ${document['edad'] ?? ''}'),
                 Text('Fecha de Pérdida: ${document['fechaPerdida'] ?? ''}'),
@@ -152,20 +171,20 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
                 Text('Raza: ${document['raza'] ?? ''}'),
                 Text('Peso: ${document['peso'] ?? ''}'),
                 Text('Tipo: ${document['tipo'] ?? ''}'),
-                SizedBox(height: 10.0),
+                const SizedBox(height: 10.0),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     _navigateToDetailsPage(document);
                   },
-                  child: Text('Ver Detalles'),
+                  child: const Text('Ver Detalles'),
                 ),
-                SizedBox(height: 10.0),
+                const SizedBox(height: 10.0),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cerrar'),
+                  child: const Text('Cerrar'),
                 ),
               ],
             ),
@@ -194,57 +213,219 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
     );
   }
 
+  Widget _buildFilterChip(String label, double value) {
+    bool isSelected = radioSeleccionado == value;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            radioSeleccionado = value;
+          });
+          _loadLostAnimals();
+        },
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.accent : Colors.transparent,
+            border: Border.all(color: isSelected ? AppTheme.accent : AppTheme.borderLight, width: 1.5),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            children: [
+              if (isSelected) ...[
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(color: AppTheme.bgDeep, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                label,
+                style: GoogleFonts.dmSans(
+                  color: isSelected ? AppTheme.bgDeep : AppTheme.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  final String _mapStyle = '''
+  [
+    {
+      "elementType": "geometry",
+      "stylers": [{"color": "#132b1e"}]
+    },
+    {
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#7fc4a0"}]
+    },
+    {
+      "elementType": "labels.text.stroke",
+      "stylers": [{"color": "#0a1810"}]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry",
+      "stylers": [{"color": "#1b3d2c"}]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry.stroke",
+      "stylers": [{"color": "#265038"}]
+    },
+    {
+      "featureType": "water",
+      "elementType": "geometry",
+      "stylers": [{"color": "#0a1810"}]
+    }
+  ]
+  ''';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.bgDark,
       body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: (GoogleMapController controller) {
-              mapController = controller;
-            },
-            initialCameraPosition: CameraPosition(
-              target: widget.initialPosition,
-              zoom: 12.0,
+          Column(
+            children: [
+              // Mapa
+              Expanded(
+                child: GoogleMap(
+                  onMapCreated: (GoogleMapController controller) {
+                    mapController = controller;
+                    controller.setMapStyle(_mapStyle);
+                  },
+                  initialCameraPosition: CameraPosition(
+                    target: widget.initialPosition,
+                    zoom: 12.0,
+                  ),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  mapType: MapType.normal,
+                  markers: markers,
+                ),
+              ),
+          // Filter Bar
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+            decoration: const BoxDecoration(
+              color: AppTheme.bgDark,
+              border: Border(
+                top: BorderSide(color: AppTheme.border),
+                bottom: BorderSide(color: AppTheme.border),
+              ),
             ),
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            mapType: MapType.normal,
-            markers: markers,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip('200m', 200.0),
+                  _buildFilterChip('500m', 500.0),
+                  _buildFilterChip('1km', 1000.0),
+                  _buildFilterChip('5km', 5000.0),
+                  _buildFilterChip('Ver Todos', double.infinity),
+                ],
+              ),
+            ),
           ),
+              // Info Panel
+              Container(
+                width: double.infinity,
+                color: AppTheme.bgDark,
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Mascotas cercanas', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 12)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accent.withOpacity(0.15),
+                            border: Border.all(color: AppTheme.accent.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '${markers.length} en ${_getRadioText()}',
+                            style: GoogleFonts.dmSans(color: AppTheme.accent, fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: AppTheme.border, height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Última actualización', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 12)),
+                        Text(_getRelativeTime(), style: GoogleFonts.dmSans(color: AppTheme.textPrimaryNew, fontSize: 12, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: () {
+                        // Acción para ver lista (podría llevar a MascotasPage)
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppTheme.borderLight),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.grid_view_rounded, size: 14, color: AppTheme.textMuted),
+                            const SizedBox(width: 7),
+                            Text('Ver lista completa', style: GoogleFonts.dmSans(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // Zoom buttons
           Positioned(
-            top: 8.0,
-            left: 8.0,
-            child: Row(
+            right: 14,
+            bottom: 240,
+            child: Column(
               children: [
-                ElevatedButton(
+                FloatingActionButton(
                   onPressed: () {
-                    setState(() {
-                      radioSeleccionado = 200.0;
-                    });
-                    _loadLostAnimals();
+                    mapController?.animateCamera(CameraUpdate.zoomIn());
                   },
-                  child: Text('200m'),
+                  mini: true,
+                  backgroundColor: AppTheme.bgDeep,
+                  foregroundColor: AppTheme.accent,
+                  elevation: 0,
+                  child: const Icon(Icons.add),
                 ),
-                SizedBox(width: 8.0),
-                ElevatedButton(
+                const SizedBox(height: 8),
+                FloatingActionButton(
                   onPressed: () {
-                    setState(() {
-                      radioSeleccionado = 500.0;
-                    });
-                    _loadLostAnimals();
+                    mapController?.animateCamera(CameraUpdate.zoomOut());
                   },
-                  child: Text('500m'),
-                ),
-                SizedBox(width: 8.0),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      radioSeleccionado = double.infinity;
-                    });
-                    _loadLostAnimals();
-                  },
-                  child: Text('Ver Todos'),
+                  mini: true,
+                  backgroundColor: AppTheme.bgDeep,
+                  foregroundColor: AppTheme.accent,
+                  elevation: 0,
+                  child: const Icon(Icons.remove),
                 ),
               ],
             ),

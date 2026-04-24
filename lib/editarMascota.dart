@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 class EditarMascotaPage extends StatefulWidget {
   final DocumentSnapshot mascota;
 
-  EditarMascotaPage({required this.mascota});
+  const EditarMascotaPage({super.key, required this.mascota});
 
   @override
   _EditarMascotaPageState createState() => _EditarMascotaPageState();
@@ -99,7 +99,7 @@ class _EditarMascotaPageState extends State<EditarMascotaPage> {
 
       // Mostrar mensaje de éxito
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Cambios guardados correctamente'),
           duration: Duration(seconds: 2),
         ),
@@ -117,10 +117,10 @@ class _EditarMascotaPageState extends State<EditarMascotaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Mascota'),
+        title: const Text('Editar Mascota'),
         actions: [
           IconButton(
-            icon: Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -147,50 +147,50 @@ class _EditarMascotaPageState extends State<EditarMascotaPage> {
                       height: 100,
                       fit: BoxFit.cover,
                     ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () async {
                   await _seleccionarNuevaImagen();
                 },
-                child: Text('Seleccionar Nueva Imagen'),
+                child: const Text('Seleccionar Nueva Imagen'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _nombreController,
-                decoration: InputDecoration(labelText: 'Nombre de la Mascota'),
+                decoration: const InputDecoration(labelText: 'Nombre de la Mascota'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _tipoController,
-                decoration: InputDecoration(labelText: 'Tipo de Mascota'),
+                decoration: const InputDecoration(labelText: 'Tipo de Mascota'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _razaController,
-                decoration: InputDecoration(labelText: 'Raza'),
+                decoration: const InputDecoration(labelText: 'Raza'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _edadController,
-                decoration: InputDecoration(labelText: 'Edad'),
+                decoration: const InputDecoration(labelText: 'Edad'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _pesoController,
-                decoration: InputDecoration(labelText: 'Peso'),
+                decoration: const InputDecoration(labelText: 'Peso'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _descripcionController,
-                decoration: InputDecoration(labelText: 'Descripción'),
+                decoration: const InputDecoration(labelText: 'Descripción'),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   // Lógica para guardar los cambios en la base de datos
                   await _guardarCambios();
                 },
-                child: Text('Guardar Cambios'),
+                child: const Text('Guardar Cambios'),
               ),
             ],
           ),

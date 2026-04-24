@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class MisMascotasPage extends StatefulWidget {
   final bool seleccionarPerdida;
 
-  MisMascotasPage({required this.seleccionarPerdida});
+  const MisMascotasPage({super.key, required this.seleccionarPerdida});
 
   @override
   _MisMascotasPageState createState() => _MisMascotasPageState();
@@ -18,7 +18,7 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mis Mascotas'),
+        title: const Text('Mis Mascotas'),
       ),
       body: _buildMascotasList(),
     );
@@ -32,7 +32,7 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
 
         var mascotas = snapshot.data?.docs;
@@ -57,7 +57,7 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
               children: [
                 // Botón de Edición
                 IconButton(
-                  icon: Icon(Icons.edit),
+                  icon: const Icon(Icons.edit),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -70,7 +70,7 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
                 ),
                 // Botón de Eliminación
                 IconButton(
-                  icon: Icon(Icons.delete),
+                  icon: const Icon(Icons.delete),
                   onPressed: () {
                     _mostrarDialogoConfirmacion(mascota);
                   },
@@ -78,7 +78,7 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
                 // Botón para marcar como perdida
                 if (widget.seleccionarPerdida)
                   IconButton(
-                    icon: Icon(Icons.warning),
+                    icon: const Icon(Icons.warning),
                     onPressed: () {
                       _irAFormularioPerdida(mascota.id);
                     },
@@ -86,7 +86,7 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
                 // Botón para marcar como no perdida
                 if (widget.seleccionarPerdida)
                   IconButton(
-                    icon: Icon(Icons.check),
+                    icon: const Icon(Icons.check),
                     onPressed: () {
                       _marcarComoNoPerdida(mascota.id);
                     },
@@ -110,21 +110,21 @@ class _MisMascotasPageState extends State<MisMascotasPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Eliminar Mascota'),
-          content: Text('¿Estás seguro de que quieres eliminar esta mascota?'),
+          title: const Text('Eliminar Mascota'),
+          content: const Text('¿Estás seguro de que quieres eliminar esta mascota?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Cerrar el diálogo
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 _eliminarMascota(mascota.id);
                 Navigator.of(context).pop(); // Cerrar el diálogo
               },
-              child: Text('Eliminar'),
+              child: const Text('Eliminar'),
             ),
           ],
         );

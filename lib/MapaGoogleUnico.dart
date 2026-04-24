@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class MapaGoogleUnico extends StatelessWidget {
   final LatLng ubicacion;
 
-  MapaGoogleUnico({required this.ubicacion});
+  const MapaGoogleUnico({super.key, required this.ubicacion});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class MapaGoogleUnico extends StatelessWidget {
         ),
         markers: {
           Marker(
-            markerId: MarkerId('UbicacionUnica'),
+            markerId: const MarkerId('UbicacionUnica'),
             position: ubicacion,
           ),
         },

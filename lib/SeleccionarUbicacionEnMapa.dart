@@ -3,6 +3,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class SeleccionarUbicacionEnMapa extends StatefulWidget {
+  const SeleccionarUbicacionEnMapa({super.key});
+
   @override
   _SeleccionarUbicacionEnMapaState createState() =>
       _SeleccionarUbicacionEnMapaState();
@@ -40,7 +42,7 @@ class _SeleccionarUbicacionEnMapaState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Seleccionar Ubicación en el Mapa'),
+        title: const Text('Seleccionar Ubicación en el Mapa'),
       ),
       body: Stack(
         children: [
@@ -64,9 +66,9 @@ class _SeleccionarUbicacionEnMapaState
                   onPressed: () {
                     _mostrarConfirmacion();
                   },
-                  child: Text('Confirmar Ubicación'),
+                  child: const Text('Confirmar Ubicación'),
                 ),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
               ],
             ),
           ),
@@ -86,9 +88,9 @@ class _SeleccionarUbicacionEnMapaState
       markers.clear(); // Limpiar marcadores previos
       markers.add(
         Marker(
-          markerId: MarkerId('ubicacionSeleccionada'),
+          markerId: const MarkerId('ubicacionSeleccionada'),
           position: ubicacion,
-          infoWindow: InfoWindow(
+          infoWindow: const InfoWindow(
             title: 'Ubicación Seleccionada',
             snippet: 'Arrastra para ajustar',
           ),
@@ -106,14 +108,14 @@ class _SeleccionarUbicacionEnMapaState
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Confirmar Ubicación'),
-          content: Text('¿Es esta la ubicación que deseas?'),
+          title: const Text('Confirmar Ubicación'),
+          content: const Text('¿Es esta la ubicación que deseas?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('No'),
+              child: const Text('No'),
             ),
             TextButton(
               onPressed: () {
@@ -121,7 +123,7 @@ class _SeleccionarUbicacionEnMapaState
                 Navigator.pop(context,
                     markers.isNotEmpty ? markers.first.position : null);
               },
-              child: Text('Sí'),
+              child: const Text('Sí'),
             ),
           ],
         );

@@ -9,7 +9,7 @@ class EditarPerfilPage extends StatefulWidget {
   final String direccionActual;
   final String nombreCompletoActual;
 
-  EditarPerfilPage({
+  const EditarPerfilPage({super.key, 
     required this.nombreUsuarioActual,
     required this.correoActual,
     required this.telefonoActual,
@@ -92,7 +92,7 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Perfil'),
+        title: const Text('Editar Perfil'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -101,46 +101,46 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
           children: [
             Text(
               'Nombre de Usuario: ${widget.nombreUsuarioActual}',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: _nombreController,
-              decoration: InputDecoration(labelText: 'Nuevo Nombre Completo'),
+              decoration: const InputDecoration(labelText: 'Nuevo Nombre Completo'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _correoController,
               decoration:
-                  InputDecoration(labelText: 'Nuevo Correo Electrónico'),
+                  const InputDecoration(labelText: 'Nuevo Correo Electrónico'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _telefonoController,
-              decoration: InputDecoration(labelText: 'Nuevo Teléfono'),
+              decoration: const InputDecoration(labelText: 'Nuevo Teléfono'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _direccionController,
-              decoration: InputDecoration(labelText: 'Nueva Dirección'),
+              decoration: const InputDecoration(labelText: 'Nueva Dirección'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Nueva Contraseña'),
+              decoration: const InputDecoration(labelText: 'Nueva Contraseña'),
               obscureText: true,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               controller: _repeatPasswordController,
               decoration:
-                  InputDecoration(labelText: 'Repetir Nueva Contraseña'),
+                  const InputDecoration(labelText: 'Repetir Nueva Contraseña'),
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _guardarCambios,
-              child: Text('Guardar Cambios'),
+              child: const Text('Guardar Cambios'),
             ),
           ],
         ),

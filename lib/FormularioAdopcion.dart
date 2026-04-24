@@ -6,6 +6,8 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:image_picker/image_picker.dart';
 
 class FormularioAdopcion extends StatefulWidget {
+  const FormularioAdopcion({super.key});
+
   @override
   _FormularioAdopcionState createState() => _FormularioAdopcionState();
 }
@@ -19,7 +21,7 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
   String _tipoPeso = 'Kilogramos';
   bool _esterilizado = false;
   bool _noSabeEsterilizado = false;
-  List<File> _imagenes = [];
+  final List<File> _imagenes = [];
 
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _imagePicker = ImagePicker();
@@ -155,7 +157,7 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Formulario de Adopción'),
+        title: const Text('Formulario de Adopción'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -172,9 +174,9 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                   }
                   return null;
                 },
-                decoration: InputDecoration(labelText: 'Nombre de la Mascota'),
+                decoration: const InputDecoration(labelText: 'Nombre de la Mascota'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -187,10 +189,10 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Edad'),
+                      decoration: const InputDecoration(labelText: 'Edad'),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   DropdownButton<String>(
                     value: _tipoEdad,
                     items: ['Días', 'Semanas', 'Años'].map((String value) {
@@ -207,7 +209,7 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -220,10 +222,10 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Peso'),
+                      decoration: const InputDecoration(labelText: 'Peso'),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   DropdownButton<String>(
                     value: _tipoPeso,
                     items: ['Kilogramos', 'Gramos'].map((String value) {
@@ -240,7 +242,7 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Checkbox(
@@ -255,8 +257,8 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                       });
                     },
                   ),
-                  Text('¿Está esterilizado?'),
-                  SizedBox(width: 10),
+                  const Text('¿Está esterilizado?'),
+                  const SizedBox(width: 10),
                   Checkbox(
                     value: _noSabeEsterilizado,
                     onChanged: (value) {
@@ -269,20 +271,20 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                       });
                     },
                   ),
-                  Text('No sé si está esterilizado'),
+                  const Text('No sé si está esterilizado'),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   await _mostrarOpcionesFoto();
                 },
-                child: Text('Tomar o Seleccionar Fotos'),
+                child: const Text('Tomar o Seleccionar Fotos'),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _guardarInformacion,
-                child: Text('Guardar Información'),
+                child: const Text('Guardar Información'),
               ),
             ],
           ),
@@ -296,7 +298,7 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Seleccionar Fuente de Fotos'),
+          title: const Text('Seleccionar Fuente de Fotos'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -305,26 +307,26 @@ class _FormularioAdopcionState extends State<FormularioAdopcion> {
                   Navigator.pop(context);
                   await _tomarFoto();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Foto tomada correctamente'),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
-                child: Text('Tomar Foto'),
+                child: const Text('Tomar Foto'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
                   await _seleccionarFoto();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Fotos seleccionadas correctamente'),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
-                child: Text('Seleccionar desde Galería'),
+                child: const Text('Seleccionar desde Galería'),
               ),
             ],
           ),

@@ -53,5 +53,7 @@ class FirebaseAuthService {
     await _auth.currentUser?.updateDisplayName(displayName);
   }
 
-  String? getCurrentUserId() {}
+  String? getCurrentUserId() {
+    return null;
+  }
 }

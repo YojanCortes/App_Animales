@@ -6,11 +6,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'detalles_de_adopcion.dart';
 
 class MiAdopcionLista extends StatelessWidget {
+  const MiAdopcionLista({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mis Animales en Adopción'),
+        title: const Text('Mis Animales en Adopción'),
       ),
       body: _buildListaAnimales(context),
     );
@@ -24,11 +26,11 @@ class MiAdopcionLista extends StatelessWidget {
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text('Error al cargar los datos.'));
+          return const Center(child: Text('Error al cargar los datos.'));
         }
 
         List<QueryDocumentSnapshot> documentos = snapshot.data!.docs;
@@ -57,11 +59,11 @@ class MiAdopcionLista extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       child: ListTile(
         title: Text(
           'Nombre: ${animal['nombre']}',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -81,25 +83,25 @@ class MiAdopcionLista extends StatelessWidget {
                 height: 80,
                 fit: BoxFit.cover,
               )
-            : SizedBox(width: 80, height: 80),
+            : const SizedBox(width: 80, height: 80),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.edit),
+              icon: const Icon(Icons.edit),
               onPressed: () {
                 _navigateToEditScreen(context, animal);
               },
             ),
             IconButton(
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               onPressed: () {
                 _showDeleteConfirmationDialog(context, animal);
               },
             ),
           ],
         ),
-        contentPadding: EdgeInsets.all(10),
+        contentPadding: const EdgeInsets.all(10),
       ),
     );
   }
@@ -126,21 +128,21 @@ class MiAdopcionLista extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Eliminar Animal'),
-          content: Text('¿Estás seguro de que quieres eliminar este animal?'),
+          title: const Text('Eliminar Animal'),
+          content: const Text('¿Estás seguro de que quieres eliminar este animal?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 _eliminarAnimal(animal['id']);
                 Navigator.pop(context);
               },
-              child: Text('Eliminar'),
+              child: const Text('Eliminar'),
             ),
           ],
         );

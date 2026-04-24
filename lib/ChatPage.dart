@@ -6,7 +6,7 @@ class ChatPage extends StatefulWidget {
   final String idMascota;
   final String nombreUsuario;
 
-  ChatPage({required this.idMascota, required this.nombreUsuario});
+  const ChatPage({super.key, required this.idMascota, required this.nombreUsuario});
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -34,7 +34,7 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           Expanded(
             child: StreamBuilder(
-              stream: widget.idMascota != null && widget.idMascota.isNotEmpty
+              stream: widget.idMascota.isNotEmpty
                   ? _firestore
                       .collection('chats')
                       .doc(widget.idMascota)
@@ -44,7 +44,7 @@ class _ChatPageState extends State<ChatPage> {
                   : null,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
@@ -77,13 +77,13 @@ class _ChatPageState extends State<ChatPage> {
       future: _getUsernameById(senderId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         } else if (snapshot.hasError) {
-          return ListTile(
+          return const ListTile(
             title: Text('Error al cargar mensaje'),
           );
         } else {
-          var senderUsername = snapshot.data as String?;
+          var senderUsername = snapshot.data;
           var isCurrentUser = senderId == _user.uid;
 
           return ListTile(
@@ -94,8 +94,8 @@ class _ChatPageState extends State<ChatPage> {
               vertical: 4.0,
             ),
             visualDensity: VisualDensity.compact,
-            leading: isCurrentUser ? null : Icon(Icons.person),
-            trailing: isCurrentUser ? Icon(Icons.person) : null,
+            leading: isCurrentUser ? null : const Icon(Icons.person),
+            trailing: isCurrentUser ? const Icon(Icons.person) : null,
           );
         }
       },
@@ -104,20 +104,20 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildMessageInput() {
     return Container(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       color: Colors.grey[200],
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: _messageController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Escribe un mensaje...',
               ),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: () {
               _sendMessage();
             },

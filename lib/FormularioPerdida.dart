@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class FormularioPerdida extends StatefulWidget {
   final String mascotaId; // Id de la mascota seleccionada
 
-  FormularioPerdida({required this.mascotaId});
+  const FormularioPerdida({super.key, required this.mascotaId});
 
   @override
   _FormularioPerdidaState createState() => _FormularioPerdidaState();
@@ -27,15 +27,15 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Formulario de Pérdida'),
+        title: const Text('Formulario de Pérdida'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Complete el formulario de pérdida:'),
-            SizedBox(height: 10),
+            const Text('Complete el formulario de pérdida:'),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -49,7 +49,7 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
                       });
                     }
                   },
-                  child: Text('Fecha de Pérdida'),
+                  child: const Text('Fecha de Pérdida'),
                 ),
                 // Botón para seleccionar la hora
                 ElevatedButton(
@@ -61,11 +61,11 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
                       });
                     }
                   },
-                  child: Text('Hora de Pérdida'),
+                  child: const Text('Hora de Pérdida'),
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Checkbox(
@@ -76,7 +76,7 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
                     });
                   },
                 ),
-                Text('Agregar dirección manualmente'),
+                const Text('Agregar dirección manualmente'),
               ],
             ),
             if (!agregarDireccionManualmente)
@@ -84,24 +84,24 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
                 onChanged: (value) {
                   direccionPerdida = value;
                 },
-                decoration: InputDecoration(labelText: 'Dirección de pérdida'),
+                decoration: const InputDecoration(labelText: 'Dirección de pérdida'),
               ),
             if (agregarDireccionManualmente)
               ElevatedButton(
                 onPressed: () {
                   _seleccionarDireccionEnMapa();
                 },
-                child: Text('Seleccionar dirección en el mapa'),
+                child: const Text('Seleccionar dirección en el mapa'),
               ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
               onChanged: (value) {
                 descripcionPerdida = value;
               },
               decoration:
-                  InputDecoration(labelText: 'Descripción de la pérdida'),
+                  const InputDecoration(labelText: 'Descripción de la pérdida'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Checkbox para agregar recompensa
             Row(
               children: [
@@ -113,7 +113,7 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
                     });
                   },
                 ),
-                Text('Agregar recompensa'),
+                const Text('Agregar recompensa'),
               ],
             ),
             // Campo para ingresar la cantidad de la recompensa
@@ -124,14 +124,14 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
                 },
                 keyboardType: TextInputType.number,
                 decoration:
-                    InputDecoration(labelText: 'Cantidad de recompensa'),
+                    const InputDecoration(labelText: 'Cantidad de recompensa'),
               ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 _generarAlerta();
               },
-              child: Text('Generar Alerta'),
+              child: const Text('Generar Alerta'),
             ),
           ],
         ),
@@ -164,7 +164,7 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
       if (mascotaSnapshot.exists) {
         if (mascotaSnapshot['perdida'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Esta mascota ya está marcada como perdida.'),
               duration: Duration(seconds: 2),
             ),
@@ -188,7 +188,7 @@ class _FormularioPerdidaState extends State<FormularioPerdida> {
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Alerta generada correctamente.'),
               duration: Duration(seconds: 2),
             ),

@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 class DetallesAnimalesAdopcion extends StatefulWidget {
   final Map<String, dynamic> animal;
 
-  DetallesAnimalesAdopcion({required this.animal});
+  const DetallesAnimalesAdopcion({super.key, required this.animal});
 
   @override
   _DetallesAnimalesAdopcionState createState() =>
@@ -22,7 +22,7 @@ class _DetallesAnimalesAdopcionState extends State<DetallesAnimalesAdopcion> {
   late TextEditingController _edadController;
   late TextEditingController _pesoController;
   bool _esterilizado = false;
-  List<File> _nuevasImagenes = [];
+  final List<File> _nuevasImagenes = [];
   String nuevaImageUrl = "";
 
   @override
@@ -39,46 +39,46 @@ class _DetallesAnimalesAdopcionState extends State<DetallesAnimalesAdopcion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalles del Animal en Adopción'),
+        title: const Text('Detalles del Animal en Adopción'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nombre:'),
+            const Text('Nombre:'),
             TextField(
               controller: _nombreController,
             ),
-            SizedBox(height: 16),
-            Text('Edad:'),
+            const SizedBox(height: 16),
+            const Text('Edad:'),
             TextField(
               controller: _edadController,
             ),
-            SizedBox(height: 16),
-            Text('Peso:'),
+            const SizedBox(height: 16),
+            const Text('Peso:'),
             TextField(
               controller: _pesoController,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildCheckbox('Esterilizado', _esterilizado, (value) {
               setState(() {
                 _esterilizado = value ?? false;
               });
             }),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 await _mostrarOpcionesFoto();
               },
-              child: Text('Cambiar Imagen'),
+              child: const Text('Cambiar Imagen'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 _guardarCambios();
               },
-              child: Text('Guardar Cambios'),
+              child: const Text('Guardar Cambios'),
             ),
           ],
         ),
@@ -104,7 +104,7 @@ class _DetallesAnimalesAdopcionState extends State<DetallesAnimalesAdopcion> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Seleccionar Fuente de Fotos'),
+          title: const Text('Seleccionar Fuente de Fotos'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -113,26 +113,26 @@ class _DetallesAnimalesAdopcionState extends State<DetallesAnimalesAdopcion> {
                   Navigator.pop(context);
                   await _tomarFoto();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Foto tomada correctamente'),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
-                child: Text('Tomar Foto'),
+                child: const Text('Tomar Foto'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
                   await _seleccionarFoto();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Fotos seleccionadas correctamente'),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
-                child: Text('Seleccionar desde Galería'),
+                child: const Text('Seleccionar desde Galería'),
               ),
             ],
           ),

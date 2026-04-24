@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class DetallesDeAdopcion extends StatelessWidget {
   final Map<String, dynamic> adopcion;
 
-  DetallesDeAdopcion({required this.adopcion});
+  const DetallesDeAdopcion({super.key, required this.adopcion});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalles de Adopción'),
+        title: const Text('Detalles de Adopción'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -44,13 +44,13 @@ class DetallesDeAdopcion extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 8.0,
                         mainAxisSpacing: 8.0,
                       ),
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: adopcion['imagenes'].length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
@@ -77,7 +77,7 @@ class DetallesDeAdopcion extends StatelessWidget {
                 // Aquí puedes agregar la lógica para iniciar una conversación con el dueño
                 // Puedes usar algún servicio de mensajería o implementar tu propio flujo de chat.
               },
-              child: Text('Hablar con el dueño'),
+              child: const Text('Hablar con el dueño'),
             ),
           ],
         ),

@@ -16,7 +16,7 @@ class DetallesAnimalesPerdidos extends StatefulWidget {
   final String nombreUsuario;
   final String idMascota;
 
-  DetallesAnimalesPerdidos({
+  const DetallesAnimalesPerdidos({super.key, 
     required this.ubicacionPerdida,
     required this.nombre,
     required this.horaPerdida,
@@ -40,7 +40,7 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
       appBar: AppBar(
         title: Text(
           widget.nombre,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
       body: Padding(
@@ -53,29 +53,29 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
                 children: [
                   Text(
                     widget.nombre,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Image.network(widget.imageUrl, width: 150, height: 150),
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildDetalle('Hora de Pérdida', _formatHoraPerdida()),
             _buildDetalle('Fecha de Pérdida', widget.fechaPerdida),
             _buildDetalle('Descripción', widget.descripcion),
             _buildRecompensa(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 _mostrarDialogoContactar(context);
               },
               child: Text('Hablar con el Dueño (${widget.nombreUsuario})'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -83,7 +83,7 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
                     onPressed: () {
                       _mostrarEnMapa(context);
                     },
-                    child: Text('Mostrar en el Mapa'),
+                    child: const Text('Mostrar en el Mapa'),
                   ),
                 ),
               ],
@@ -107,9 +107,9 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('$label:', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('$label:', style: const TextStyle(fontWeight: FontWeight.bold)),
         Text(value),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
       ],
     );
   }
@@ -118,11 +118,11 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
     return widget.recompensa != null
         ? Container(
             color: Colors.amber,
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                Icon(Icons.attach_money),
-                SizedBox(width: 5),
+                const Icon(Icons.attach_money),
+                const SizedBox(width: 5),
                 Text('Recompensa: \$${widget.recompensa!.toString()}'),
               ],
             ),
@@ -135,7 +135,7 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Contactar al Dueño'),
+          title: const Text('Contactar al Dueño'),
           content: Text(
             'Puedes contactar al dueño del animal (${widget.nombreUsuario}) a través de la aplicación.',
           ),
@@ -144,7 +144,7 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cerrar'),
+              child: const Text('Cerrar'),
             ),
             TextButton(
               onPressed: () {
@@ -152,7 +152,7 @@ class _DetallesAnimalesPerdidosState extends State<DetallesAnimalesPerdidos> {
                 print('Nombre de usuario: ${widget.nombreUsuario}');
                 _navigateToChatPage(widget.nombreUsuario, widget.idMascota);
               },
-              child: Text('Hablar'),
+              child: const Text('Hablar'),
             ),
           ],
         );

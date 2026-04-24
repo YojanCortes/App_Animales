@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class AgregarMascotaPage extends StatefulWidget {
+  const AgregarMascotaPage({super.key});
+
   @override
   _AgregarMascotaPageState createState() => _AgregarMascotaPageState();
 }
@@ -68,7 +70,7 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
 
           // Mostrar mensaje de éxito
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Mascota agregada correctamente'),
               duration: Duration(seconds: 2),
             ),
@@ -164,7 +166,7 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Agregar Mascota'),
+        title: const Text('Agregar Mascota'),
       ),
       body: _cargando
           ? _buildPantallaCarga()
@@ -184,19 +186,19 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
                         return null;
                       },
                       decoration:
-                          InputDecoration(labelText: 'Nombre de la Mascota'),
+                          const InputDecoration(labelText: 'Nombre de la Mascota'),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Selector de Tipo de Mascota
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildTipoMascotaButton('Perro'),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         _buildTipoMascotaButton('Gato'),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _razaController,
                       validator: (value) {
@@ -205,9 +207,9 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Raza'),
+                      decoration: const InputDecoration(labelText: 'Raza'),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _edadController,
                       validator: (value) {
@@ -216,9 +218,9 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Edad'),
+                      decoration: const InputDecoration(labelText: 'Edad'),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _pesoController,
                       validator: (value) {
@@ -227,9 +229,9 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Peso'),
+                      decoration: const InputDecoration(labelText: 'Peso'),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _descripcionController,
                       validator: (value) {
@@ -238,20 +240,20 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Descripción'),
+                      decoration: const InputDecoration(labelText: 'Descripción'),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // Botón para tomar o seleccionar foto
                     ElevatedButton(
                       onPressed: () async {
                         await _mostrarOpcionesFoto();
                       },
-                      child: Text('Tomar o Seleccionar Foto'),
+                      child: const Text('Tomar o Seleccionar Foto'),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _agregarMascota,
-                      child: Text('Agregar Mascota'),
+                      child: const Text('Agregar Mascota'),
                     ),
                   ],
                 ),
@@ -261,16 +263,19 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
   }
 
   Widget _buildTipoMascotaButton(String tipo) {
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          _tipoMascota = tipo;
-        });
-      },
+    final isSelected = _tipoMascota == tipo;
+    return ElevatedButton.icon(
+      onPressed: () => setState(() => _tipoMascota = tipo),
+      icon: Icon(tipo == 'Perro' ? Icons.pets_rounded : Icons.catching_pokemon_rounded, size: 18),
+      label: Text(tipo),
       style: ElevatedButton.styleFrom(
-        primary: _tipoMascota == tipo ? Colors.blue : null,
+        backgroundColor: isSelected
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        foregroundColor:
+            isSelected ? Colors.white : Theme.of(context).colorScheme.primary,
+        elevation: isSelected ? 2 : 0,
       ),
-      child: Text(tipo),
     );
   }
 
@@ -279,7 +284,7 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Seleccionar Fuente de Foto'),
+          title: const Text('Seleccionar Fuente de Foto'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -288,26 +293,26 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
                   Navigator.pop(context);
                   await _tomarFoto();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Foto cargada correctamente'),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
-                child: Text('Tomar Foto'),
+                child: const Text('Tomar Foto'),
               ),
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
                   await _seleccionarFoto();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Foto cargada correctamente'),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
-                child: Text('Seleccionar desde Galería'),
+                child: const Text('Seleccionar desde Galería'),
               ),
             ],
           ),
@@ -317,7 +322,7 @@ class _AgregarMascotaPageState extends State<AgregarMascotaPage> {
   }
 
   Widget _buildPantallaCarga() {
-    return Center(
+    return const Center(
       child: CircularProgressIndicator(),
     );
   }
