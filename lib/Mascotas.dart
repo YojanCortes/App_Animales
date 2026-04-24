@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:appanimales/theme/app_theme.dart';
 
 class MascotasPage extends StatefulWidget {
   const MascotasPage({super.key});
@@ -13,468 +14,463 @@ class MascotasPage extends StatefulWidget {
 }
 
 class _MascotasPageState extends State<MascotasPage> {
-  final List<String> tiposAnimales = ['Todos', 'Perro', 'Gato'];
-  String tipoSeleccionado = 'Todos';
-  DateTime? fechaSeleccionada;
+  int _selectedTab = 0; // 0: Cerca de mí, 1: Perdidos, 2: Avistados, 3: Encontrados
 
-  // Stream activo (se actualiza cuando cambian los filtros)
   Stream<QuerySnapshot> _buildStream() {
-    Query query = FirebaseFirestore.instance
+    return FirebaseFirestore.instance
         .collection('mascotas')
-        .where('perdida', isEqualTo: true)
-        .orderBy('fechaPerdida', descending: true);
-
-    if (tipoSeleccionado != 'Todos') {
-      query = query.where('tipo', isEqualTo: tipoSeleccionado);
-    }
-    return query.snapshots();
-  }
-
-  void _mostrarMenuFiltros() {
-    String tempTipo = tipoSeleccionado;
-    DateTime? tempFecha = fechaSeleccionada;
-
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setModalState) => Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Handle
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text('Filtrar mascotas',
-                    style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 20),
-
-                Text('Tipo de animal',
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700)),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  children: tiposAnimales
-                      .map((tipo) => ChoiceChip(
-                            label: Text(tipo),
-                            selected: tempTipo == tipo,
-                            onSelected: (_) =>
-                                setModalState(() => tempTipo = tipo),
-                            selectedColor: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.2),
-                          ))
-                      .toList(),
-                ),
-
-                const SizedBox(height: 20),
-                Text('Fecha de pérdida',
-                    style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700)),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        DateTime? picked = await showDatePicker(
-                          context: ctx,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                        );
-                        if (picked != null) {
-                          setModalState(() => tempFecha = picked);
-                        }
-                      },
-                      icon: const Icon(Icons.calendar_today_outlined,
-                          size: 18),
-                      label: Text(tempFecha != null
-                          ? '${tempFecha!.day}/${tempFecha!.month}/${tempFecha!.year}'
-                          : 'Seleccionar fecha'),
-                    ),
-                    if (tempFecha != null) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 20),
-                        onPressed: () =>
-                            setModalState(() => tempFecha = null),
-                      ),
-                    ]
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            tipoSeleccionado = 'Todos';
-                            fechaSeleccionada = null;
-                          });
-                          Navigator.pop(ctx);
-                        },
-                        child: const Text('Limpiar'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            tipoSeleccionado = tempTipo;
-                            fechaSeleccionada = tempFecha;
-                          });
-                          Navigator.pop(ctx);
-                        },
-                        child: const Text('Aplicar'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+        .orderBy('fechaPerdida', descending: true)
+        .snapshots();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Mascotas Perdidas'),
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                onPressed: _mostrarMenuFiltros,
-                icon: const Icon(Icons.tune_rounded),
-                tooltip: 'Filtros',
-              ),
-              if (tipoSeleccionado != 'Todos' || fechaSeleccionada != null)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.orange,
-                      shape: BoxShape.circle,
+      backgroundColor: AppTheme.bgDark,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: _buildTopHeader()),
+            SliverToBoxAdapter(child: _buildTabs()),
+            SliverToBoxAdapter(child: _buildAlertasUrgentes()),
+            
+            StreamBuilder<QuerySnapshot>(
+              stream: _buildStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return SliverToBoxAdapter(child: _buildShimmerList());
+                }
+
+                if (snapshot.hasError) {
+                  return const SliverToBoxAdapter(
+                    child: Center(child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Text('Error al cargar datos', style: TextStyle(color: Colors.red)),
+                    )),
+                  );
+                }
+
+                List<QueryDocumentSnapshot> docs = snapshot.data?.docs ?? [];
+                
+                // Filtrar según la pestaña (Simulado para demostración)
+                if (_selectedTab == 1) {
+                  docs = docs.where((d) => (d.data() as Map)['perdida'] == true).toList();
+                } else if (_selectedTab == 3) {
+                  docs = docs.where((d) => (d.data() as Map)['perdida'] == false).toList();
+                }
+
+                if (docs.isEmpty) {
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 60),
+                      child: Center(
+                        child: Text('No hay mascotas en esta categoría', style: GoogleFonts.inter(color: AppTheme.textMuted)),
+                      ),
                     ),
+                  );
+                }
+
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _PremiumPetCard(doc: docs[index]),
+                    childCount: docs.length,
                   ),
-                ),
+                );
+              },
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)), // Margen inferior
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('PetFind', style: GoogleFonts.outfit(color: AppTheme.accent, fontSize: 24, fontWeight: FontWeight.bold)),
+              Text('Santiago · 14 alertas activas', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
             ],
           ),
+          Row(
+            children: [
+              Stack(
+                children: [
+                  const Icon(Icons.notifications_none_rounded, color: AppTheme.textMuted),
+                  Positioned(
+                    right: 2, top: 2, 
+                    child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle))
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.search_rounded, color: AppTheme.textMuted),
+            ],
+          )
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _buildStream(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return _buildShimmerList();
-          }
+    );
+  }
 
-          if (snapshot.hasError) {
-            return _buildError();
-          }
-
-          List<QueryDocumentSnapshot> docs = snapshot.data?.docs ?? [];
-
-          // Filtrar por fecha localmente (Firestore no soporta múltiples filtros en rangos)
-          if (fechaSeleccionada != null) {
-            docs = docs.where((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              final fechaStr = data['fechaPerdida'] as String? ?? '';
-              try {
-                final fecha = DateTime.parse(fechaStr);
-                return fecha.year == fechaSeleccionada!.year &&
-                    fecha.month == fechaSeleccionada!.month &&
-                    fecha.day == fechaSeleccionada!.day;
-              } catch (_) {
-                return false;
-              }
-            }).toList();
-          }
-
-          if (docs.isEmpty) {
-            return _buildEmpty();
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: docs.length,
-            itemBuilder: (context, index) =>
-                _MascotaPerdidaCard(doc: docs[index]),
+  Widget _buildTabs() {
+    final tabs = ['Cerca de mí', 'Perdidos', 'Avistados', 'Encontrados'];
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppTheme.border))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(tabs.length, (index) {
+          final isSelected = _selectedTab == index;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedTab = index),
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: isSelected ? AppTheme.accent : Colors.transparent, width: 2)),
+              ),
+              child: Text(
+                tabs[index], 
+                style: GoogleFonts.inter(
+                  color: isSelected ? AppTheme.accent : AppTheme.textMuted, 
+                  fontSize: 13, 
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400
+                )
+              ),
+            ),
           );
-        },
+        }),
+      ),
+    );
+  }
+
+  Widget _buildAlertasUrgentes() {
+    final alertas = [
+      {'nombre': 'Rocky', 'tiempo': '1h', 'color': AppTheme.danger, 'img': 'assets/perro.jpeg'},
+      {'nombre': 'Misi', 'tiempo': '2h', 'color': AppTheme.danger, 'img': 'assets/gato.jpeg'},
+      {'nombre': 'Coco', 'tiempo': 'hallado', 'color': AppTheme.accent, 'img': 'assets/perro.jpeg'},
+      {'nombre': 'Bunny', 'tiempo': '5h', 'color': AppTheme.danger, 'img': 'assets/gato.jpeg'},
+      {'nombre': 'Thor', 'tiempo': '6h', 'color': AppTheme.danger, 'img': 'assets/perro.jpeg'},
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle)),
+                const SizedBox(width: 8),
+                Text('Alertas urgentes — últimas 6 horas', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 90,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: alertas.length,
+              itemBuilder: (context, index) {
+                final alerta = alertas[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 62, height: 62,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: alerta['color'] as Color, width: 2),
+                          image: DecorationImage(image: AssetImage(alerta['img'] as String), fit: BoxFit.cover),
+                        ),
+                        child: Align(
+                          alignment: Alignment.bottomRight,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                            child: Text(alerta['tiempo'] as String, style: GoogleFonts.inter(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(alerta['nombre'] as String, style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 11)),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildShimmerList() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5,
-        itemBuilder: (_, __) => Container(
-          height: 120,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildError() {
-    return Center(
+      baseColor: AppTheme.bgDeep,
+      highlightColor: AppTheme.border,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 48),
-          const SizedBox(height: 12),
-          Text('Error al cargar', style: Theme.of(context).textTheme.titleMedium),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🐾', style: TextStyle(fontSize: 64)),
-          const SizedBox(height: 16),
-          Text('No hay mascotas perdidas',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(
-            tipoSeleccionado != 'Todos' || fechaSeleccionada != null
-                ? 'Prueba con otros filtros'
-                : 'Todo está en orden 🎉',
-            style: GoogleFonts.inter(color: Colors.grey),
-          ),
-        ],
+        children: List.generate(3, (index) => Container(
+          height: 300,
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        )),
       ),
     );
   }
 }
 
-class _MascotaPerdidaCard extends StatelessWidget {
+class _PremiumPetCard extends StatelessWidget {
   final QueryDocumentSnapshot doc;
-  const _MascotaPerdidaCard({required this.doc});
+  
+  const _PremiumPetCard({required this.doc});
 
   @override
   Widget build(BuildContext context) {
     final data = doc.data() as Map<String, dynamic>;
     final nombre = data['nombre'] as String? ?? 'Sin nombre';
-    final tipo = data['tipo'] as String? ?? '';
-    final ubicacion =
-        data['ultimaDireccionVista'] as String? ?? 'Ubicación no disponible';
-    final hora = data['horaPerdida'] as String? ?? '';
-    final fecha = data['fechaPerdida'] as String? ?? '';
-    final descripcion =
-        data['descripcion'] as String? ?? '';
+    final raza = data['raza'] as String? ?? 'Desconocida';
+    final tipo = data['tipo'] as String? ?? 'Mascota';
+    final perdida = data['perdida'] as bool? ?? true;
+    final ubicacion = data['ultimaDireccionVista'] as String? ?? 'Desconocida';
     final imageUrl = data['imagen'] as String? ?? '';
-    final nombreUsuario =
-        data['nombreUsuario'] as String? ?? 'Dueño desconocido';
-    final tieneRecompensa = data['recompensa'] != null;
-    final recompensa =
-        tieneRecompensa ? (data['recompensa'] as num).toDouble() : 0.0;
+    final recompensa = data['recompensa'] != null ? (data['recompensa'] as num).toDouble() : 0.0;
+    final descripcion = data['descripcion'] as String? ?? '';
+    final nombreUsuario = data['nombreUsuario'] as String? ?? 'Dueño';
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final Color statusColor = perdida ? AppTheme.danger : AppTheme.accent;
+    final String statusText = perdida ? 'PERDIDO' : 'ENCONTRADA';
+    final String statusDesc = perdida ? 'Perdido · hace poco' : 'Encontrada · esperando dueño';
 
-    return Card(
-      child: InkWell(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.bgDeep, // Un tono ligeramente más claro que bgDark
         borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DetallesAnimalesPerdidos(
-              ubicacionPerdida:
-                  data['ubicacionPerdida'] as Map<String, dynamic>? ?? {},
-              nombre: nombre,
-              horaPerdida: hora,
-              fechaPerdida: fecha,
-              descripcion: descripcion,
-              imageUrl: imageUrl,
-              recompensa: recompensa,
-              nombreUsuario: nombreUsuario,
-              idMascota: doc.id,
-            ),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Imagen
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        width: 88,
-                        height: 88,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
-                          width: 88,
-                          height: 88,
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.pets_rounded,
-                              color: Colors.grey),
-                        ),
-                        errorWidget: (_, __, ___) => Container(
-                          width: 88,
-                          height: 88,
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.pets_rounded,
-                              color: Colors.grey),
-                        ),
-                      )
-                    : Container(
-                        width: 88,
-                        height: 88,
-                        color: colorScheme.primary.withOpacity(0.1),
-                        child: Icon(Icons.pets_rounded,
-                            color: colorScheme.primary, size: 36),
-                      ),
-              ),
-              const SizedBox(width: 14),
-
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(nombre,
-                              style: Theme.of(context).textTheme.titleMedium,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                        if (tipo.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color:
-                                  colorScheme.primary.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(tipo,
-                                style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w600)),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 14, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(ubicacion,
-                              style: GoogleFonts.inter(
-                                  fontSize: 12, color: Colors.grey.shade600),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                      ],
-                    ),
-                    if (fecha.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+        border: Border.all(color: AppTheme.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header del Card
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : const AssetImage('assets/perro.jpeg') as ImageProvider,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('$nombre — $raza', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today_outlined,
-                              size: 13, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text(
-                            hora.isNotEmpty ? '$fecha · $hora' : fecha,
-                            style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey.shade600),
-                          ),
+                          Container(width: 6, height: 6, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
+                          const SizedBox(width: 6),
+                          Text(statusDesc, style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
                         ],
                       ),
                     ],
-                    const SizedBox(height: 6),
-                    Row(
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: statusColor.withOpacity(0.5)),
+                  ),
+                  child: Text(perdida ? 'Lo vi' : 'Es mía', style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+                ),
+              ],
+            ),
+          ),
+          
+          // Imagen Principal
+          Container(
+            height: 220,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFF131A15),
+              image: DecorationImage(
+                image: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : const AssetImage('assets/perro.jpeg') as ImageProvider,
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.1), BlendMode.darken),
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 12, left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: statusColor.withOpacity(0.2), borderRadius: BorderRadius.circular(8), border: Border.all(color: statusColor.withOpacity(0.5))),
+                    child: Text(statusText, style: GoogleFonts.inter(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                  ),
+                ),
+                Positioned(
+                  top: 12, right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(8)),
+                    child: Row(
                       children: [
-                        const Icon(Icons.person_outline,
-                            size: 14, color: Colors.grey),
+                        const Icon(Icons.location_on, color: Colors.white70, size: 12),
                         const SizedBox(width: 4),
-                        Text('@$nombreUsuario',
-                            style: GoogleFonts.inter(
-                                fontSize: 12, color: Colors.grey)),
-                        if (tieneRecompensa) ...[
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFC535),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.attach_money_rounded,
-                                    size: 13, color: Colors.black87),
-                                Text(
-                                  recompensa.toStringAsFixed(0),
-                                  style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black87),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        Text(ubicacion.split(',')[0], style: GoogleFonts.inter(color: Colors.white, fontSize: 10)),
                       ],
+                    ),
+                  ),
+                ),
+                // Gradiente inferior
+                Positioned(
+                  bottom: 0, left: 0, right: 0,
+                  child: Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                        colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 12, left: 16, right: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(nombre, style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text(tipo, style: GoogleFonts.inter(color: Colors.white70, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Stats Row
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStat('1.2 km', 'de ti'),
+                Container(width: 1, height: 30, color: AppTheme.border),
+                _buildStat('3', 'avistamientos'),
+                Container(width: 1, height: 30, color: AppTheme.border),
+                _buildStat('47', 'compartidos'),
+              ],
+            ),
+          ),
+          
+          // Recompensa
+          if (recompensa > 0)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C220E),
+                border: Border.all(color: const Color(0xFFD49E34).withOpacity(0.5)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.monetization_on, color: Color(0xFFD49E34), size: 18),
+                  const SizedBox(width: 8),
+                  Text('Recompensa', style: GoogleFonts.inter(color: const Color(0xFFD49E34), fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(width: 8),
+                  Text('\$${recompensa.toStringAsFixed(0)}', style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            
+          // Botones de acción
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.share_outlined, size: 18),
+                    label: const Text('Compartir'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white, side: const BorderSide(color: AppTheme.borderLight),
+                      padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    label: const Text('Contactar'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white, side: const BorderSide(color: AppTheme.borderLight),
+                      padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Comentarios / Descripción
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
+                    children: [
+                      TextSpan(text: '$nombreUsuario: ', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      TextSpan(text: descripcion.isNotEmpty ? descripcion : '"Se perdió ayer cerca del parque. Por favor ayúdenme a encontrarlo."'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.location_on, color: statusColor, size: 14),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text('Último avistamiento: ${ubicacion}, hace poco', style: GoogleFonts.inter(color: AppTheme.accent, fontSize: 11)),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildStat(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 2),
+        Text(label, style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 11)),
+      ],
     );
   }
 }
