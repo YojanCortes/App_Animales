@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:739961319251:android:24a3e022f7a37d6f63fba6",
+        "mobilesdk_app_id": "1:739961319251:android:917c5e518543ef4f63fba6",
         "android_client_info": {
-          "package_name": "com.example.appanimales"
+          "package_name": "mascota_perdida20.d2.d6"
         }
       },
       "oauth_client": [],
@@ -20,7 +20,15 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "739961319251-001svandidpcorancbriabqjb76pr44q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.appanimales"
+              }
+            }
+          ]
         }
       }
     }

@@ -17,6 +17,7 @@ import 'Adoptados.dart';
 import 'MiAdopcionLista.dart';
 import 'MisMascotas.dart';
 import 'package:appanimales/theme/app_theme.dart';
+import 'ChatsListPage.dart';
 
 class MenuPage extends StatefulWidget {
   final User? user;
@@ -30,6 +31,7 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String nombreUsuario = '';
   String telefono = '';
   String direccion = '';
@@ -39,9 +41,9 @@ class _MenuPageState extends State<MenuPage>
   final List<_TabItem> _tabs = const [
     _TabItem(icon: Icons.home_outlined, label: 'Inicio'),
     _TabItem(icon: Icons.my_location_rounded, label: 'Mapa'),
-    _TabItem(icon: Icons.add, label: ''),
+    _TabItem(icon: Icons.chat_bubble_rounded, label: 'Chats'),
     _TabItem(icon: Icons.maps_home_work_outlined, label: 'Adoptados'),
-    _TabItem(icon: Icons.person_outline_rounded, label: 'Perfil'),
+    _TabItem(icon: Icons.pets_outlined, label: 'Mascotas'),
   ];
 
   @override
@@ -127,16 +129,22 @@ class _MenuPageState extends State<MenuPage>
     }
   }
 
+  void _openDrawer() {
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
   Widget _buildPage(int index) {
     switch (index) {
       case 0:
-        return const MascotasPage();
+        return MascotasPage(onMenuTap: _openDrawer);
       case 1:
         return GoogleMapPage(initialPosition: const LatLng(-33.0458, -71.6197));
+      case 2:
+        return const ChatsListPage();
       case 3:
-        return const AdoptadosPage();
+        return AdoptadosPage(onMenuTap: _openDrawer);
       case 4:
-        return const ListaAnimalesAdopcion();
+        return MisMascotasPage(seleccionarPerdida: false);
       default:
         return const SizedBox.shrink();
     }
@@ -176,8 +184,10 @@ class _MenuPageState extends State<MenuPage>
     }
   }
 
-  void _navigate(Widget page) {
-    Navigator.pop(context);
+  void _navigate(Widget page, {bool fromDrawer = false}) {
+    if (fromDrawer) {
+      Navigator.pop(context);
+    }
     Navigator.push(
         context, MaterialPageRoute(builder: (_) => page));
   }
@@ -195,22 +205,23 @@ class _MenuPageState extends State<MenuPage>
         : (widget.user?.email?.substring(0, 1).toUpperCase() ?? '?');
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppTheme.bgDark,
       body: SafeArea(
         child: Column(
           children: [
             // Custom Top Bar
-            Container(
-              color: AppTheme.bgDark,
-              padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Builder(
-                        builder: (context) => InkWell(
-                          onTap: () => Scaffold.of(context).openDrawer(),
+            if (_tabController.index == 1)
+              Container(
+                color: AppTheme.bgDark,
+                padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: _openDrawer,
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             width: 36,
@@ -223,61 +234,60 @@ class _MenuPageState extends State<MenuPage>
                             child: const Icon(Icons.menu_rounded, color: AppTheme.textMuted, size: 20),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text('Mapa', style: GoogleFonts.dmSans(color: AppTheme.textPrimaryNew, fontSize: 18, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                  InkWell(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              MisMascotasPage(seleccionarPerdida: true)),
+                        const SizedBox(width: 12),
+                        Text('Mapa', style: GoogleFonts.dmSans(color: AppTheme.textPrimaryNew, fontSize: 18, fontWeight: FontWeight.w600)),
+                      ],
                     ),
-                    borderRadius: BorderRadius.circular(999),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: AppTheme.dangerBg,
-                        border: Border.all(color: AppTheme.dangerBorder),
-                        borderRadius: BorderRadius.circular(999),
+                    InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                MisMascotasPage(seleccionarPerdida: true)),
                       ),
-                      child: Row(
-                        children: [
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0.45, end: 1.0),
-                            duration: const Duration(seconds: 1),
-                            builder: (context, value, child) {
-                              return Opacity(
-                                opacity: value,
-                                child: Transform.scale(
-                                  scale: 0.85 + (0.15 * ((value - 0.45) / 0.55)),
-                                  child: child,
-                                ),
-                              );
-                            },
-                            onEnd: () {}, 
-                            child: Container(
-                              width: 7, height: 7,
-                              decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle),
+                      borderRadius: BorderRadius.circular(999),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: AppTheme.dangerBg,
+                          border: Border.all(color: AppTheme.dangerBorder),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          children: [
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0.45, end: 1.0),
+                              duration: const Duration(seconds: 1),
+                              builder: (context, value, child) {
+                                return Opacity(
+                                  opacity: value,
+                                  child: Transform.scale(
+                                    scale: 0.85 + (0.15 * ((value - 0.45) / 0.55)),
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              onEnd: () {}, 
+                              child: Container(
+                                width: 7, height: 7,
+                                decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 7),
-                          Text(
-                            'Perdí mi mascota',
-                            style: GoogleFonts.dmSans(
-                                color: AppTheme.danger,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
+                            const SizedBox(width: 7),
+                            Text(
+                              'Perdí mi mascota',
+                              style: GoogleFonts.dmSans(
+                                  color: AppTheme.danger,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             
             // Tab Content
             Expanded(
@@ -287,7 +297,7 @@ class _MenuPageState extends State<MenuPage>
                 children: [
                   _buildPage(0),
                   _buildPage(1),
-                  const SizedBox.shrink(),
+                  _buildPage(2),
                   _buildPage(3),
                   _buildPage(4),
                 ],
@@ -306,21 +316,6 @@ class _MenuPageState extends State<MenuPage>
                 children: List.generate(_tabs.length, (index) {
                   final t = _tabs[index];
                   
-                  if (index == 2) {
-                    return GestureDetector(
-                      onTap: () => _navigate(AgregarMascotaPage()),
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          border: Border.all(color: AppTheme.accent),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.add, color: AppTheme.accent, size: 24),
-                      ),
-                    );
-                  }
-
                   final isSelected = _tabController.index == index;
                   final color = isSelected ? AppTheme.accent : AppTheme.textFaint;
                   return GestureDetector(
@@ -430,35 +425,35 @@ class _MenuPageState extends State<MenuPage>
                       correoActual: widget.user?.email ?? '',
                       telefonoActual: telefono,
                       direccionActual: direccion,
-                    )),
+                    ), fromDrawer: true),
                   ),
                   _DrawerTile(
                     icon: Icons.pets_rounded,
                     label: 'Agregar Mascota',
-                    onTap: () => _navigate(AgregarMascotaPage()),
+                    onTap: () => _navigate(AgregarMascotaPage(), fromDrawer: true),
                   ),
                   _DrawerTile(
                     icon: Icons.list_alt_rounded,
                     label: 'Mis Mascotas',
                     onTap: () => _navigate(
-                        MisMascotasPage(seleccionarPerdida: false)),
+                        MisMascotasPage(seleccionarPerdida: false), fromDrawer: true),
                   ),
                   _DrawerTile(
                     icon: Icons.volunteer_activism_rounded,
                     label: 'Poner en Adopción',
-                    onTap: () => _navigate(FormularioAdopcion()),
+                    onTap: () => _navigate(FormularioAdopcion(), fromDrawer: true),
                   ),
                   _DrawerTile(
                     icon: Icons.favorite_rounded,
                     label: 'Mi Lista de Adopción',
-                    onTap: () => _navigate(MiAdopcionLista()),
+                    onTap: () => _navigate(MiAdopcionLista(), fromDrawer: true),
                   ),
                   const Divider(indent: 16, endIndent: 16),
                   _DrawerTile(
                     icon: Icons.sentiment_very_dissatisfied_rounded,
                     label: 'Perdí mi Mascota',
                     onTap: () => _navigate(
-                        MisMascotasPage(seleccionarPerdida: true)),
+                        MisMascotasPage(seleccionarPerdida: true), fromDrawer: true),
                     color: colorScheme.secondary,
                   ),
                   const Divider(indent: 16, endIndent: 16),

@@ -206,16 +206,32 @@ class _AlertasPageState extends State<AlertasPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Alertas', style: GoogleFonts.outfit(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text('5 sin leer', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 13)),
-            ],
+          InkWell(
+            onTap: () => Navigator.pop(context),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.chevron_left_rounded, color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Alertas', style: GoogleFonts.outfit(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text('5 sin leer', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 13)),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 2),

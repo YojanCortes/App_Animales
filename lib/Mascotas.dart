@@ -1,4 +1,5 @@
 import 'package:appanimales/DetallesAnimalesPerdios.dart';
+import 'package:appanimales/ChatPage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,7 +9,8 @@ import 'package:appanimales/theme/app_theme.dart';
 import 'Alertas.dart';
 
 class MascotasPage extends StatefulWidget {
-  const MascotasPage({super.key});
+  final VoidCallback? onMenuTap;
+  const MascotasPage({super.key, this.onMenuTap});
 
   @override
   _MascotasPageState createState() => _MascotasPageState();
@@ -29,74 +31,100 @@ class _MascotasPageState extends State<MascotasPage> {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _buildTopHeader()),
-            SliverToBoxAdapter(child: _buildTabs()),
-            SliverToBoxAdapter(child: _buildAlertasUrgentes()),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: _buildStream(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(child: _buildTopHeader(0)),
+                  SliverToBoxAdapter(child: _buildTabs()),
+                  SliverToBoxAdapter(child: _buildShimmerList()),
+                ],
+              );
+            }
+
+            if (snapshot.hasError) {
+              return const Center(child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Text('Error al cargar datos', style: TextStyle(color: Colors.red)),
+              ));
+            }
+
+            List<QueryDocumentSnapshot> docs = snapshot.data?.docs ?? [];
+            List<QueryDocumentSnapshot> perdidos = docs.where((d) => (d.data() as Map)['perdida'] == true).toList();
             
-            StreamBuilder<QuerySnapshot>(
-              stream: _buildStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SliverToBoxAdapter(child: _buildShimmerList());
-                }
+            // Filtrado de la lista principal
+            List<QueryDocumentSnapshot> filteredDocs = List.from(docs);
+            if (_selectedTab == 1) { // Perdidos
+              filteredDocs = filteredDocs.where((d) => (d.data() as Map)['perdida'] == true).toList();
+            } else if (_selectedTab == 3) { // Encontrados (En casa o no perdidos)
+              filteredDocs = filteredDocs.where((d) => (d.data() as Map)['perdida'] == false).toList();
+            }
+            // _selectedTab == 0 (Cerca) y _selectedTab == 2 (Avistados) muestran todos por ahora
 
-                if (snapshot.hasError) {
-                  return const SliverToBoxAdapter(
-                    child: Center(child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Text('Error al cargar datos', style: TextStyle(color: Colors.red)),
-                    )),
-                  );
-                }
-
-                List<QueryDocumentSnapshot> docs = snapshot.data?.docs ?? [];
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildTopHeader(perdidos.length)),
+                SliverToBoxAdapter(child: _buildTabs()),
+                SliverToBoxAdapter(child: _buildAlertasUrgentes(perdidos)),
                 
-                // Filtrar según la pestaña (Simulado para demostración)
-                if (_selectedTab == 1) {
-                  docs = docs.where((d) => (d.data() as Map)['perdida'] == true).toList();
-                } else if (_selectedTab == 3) {
-                  docs = docs.where((d) => (d.data() as Map)['perdida'] == false).toList();
-                }
-
-                if (docs.isEmpty) {
-                  return SliverToBoxAdapter(
+                if (filteredDocs.isEmpty)
+                  SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 60),
                       child: Center(
                         child: Text('No hay mascotas en esta categoría', style: GoogleFonts.inter(color: AppTheme.textMuted)),
                       ),
                     ),
-                  );
-                }
-
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _PremiumPetCard(doc: docs[index]),
-                    childCount: docs.length,
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _PremiumPetCard(doc: filteredDocs[index]),
+                      childCount: filteredDocs.length,
+                    ),
                   ),
-                );
-              },
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 100)), // Margen inferior
-          ],
+                  
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildTopHeader() {
+  Widget _buildTopHeader(int countAlertas) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text('PetFind', style: GoogleFonts.outfit(color: AppTheme.accent, fontSize: 24, fontWeight: FontWeight.bold)),
-              Text('Santiago · 14 alertas activas', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
+              Builder(
+                builder: (context) => InkWell(
+                  onTap: widget.onMenuTap ?? () {},
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 12),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.04),
+                      border: Border.all(color: AppTheme.border),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.menu_rounded, color: AppTheme.textMuted, size: 20),
+                  ),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('PetFind', style: GoogleFonts.outfit(color: AppTheme.accent, fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text('Santiago · $countAlertas alertas activas', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
+                ],
+              ),
             ],
           ),
           Row(
@@ -108,10 +136,11 @@ class _MascotasPageState extends State<MascotasPage> {
                 child: Stack(
                   children: [
                     const Icon(Icons.notifications_none_rounded, color: AppTheme.textMuted),
-                    Positioned(
-                      right: 2, top: 2, 
-                      child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle))
-                    ),
+                    if (countAlertas > 0)
+                      Positioned(
+                        right: 2, top: 2, 
+                        child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle))
+                      ),
                   ],
                 ),
               ),
@@ -155,14 +184,9 @@ class _MascotasPageState extends State<MascotasPage> {
     );
   }
 
-  Widget _buildAlertasUrgentes() {
-    final alertas = [
-      {'nombre': 'Rocky', 'tiempo': '1h', 'color': AppTheme.danger, 'img': 'assets/perro.jpeg'},
-      {'nombre': 'Misi', 'tiempo': '2h', 'color': AppTheme.danger, 'img': 'assets/gato.jpeg'},
-      {'nombre': 'Coco', 'tiempo': 'hallado', 'color': AppTheme.accent, 'img': 'assets/perro.jpeg'},
-      {'nombre': 'Bunny', 'tiempo': '5h', 'color': AppTheme.danger, 'img': 'assets/gato.jpeg'},
-      {'nombre': 'Thor', 'tiempo': '6h', 'color': AppTheme.danger, 'img': 'assets/perro.jpeg'},
-    ];
+  Widget _buildAlertasUrgentes(List<QueryDocumentSnapshot> perdidos) {
+    if (perdidos.isEmpty) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 20),
       child: Column(
@@ -174,7 +198,7 @@ class _MascotasPageState extends State<MascotasPage> {
               children: [
                 Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle)),
                 const SizedBox(width: 8),
-                Text('Alertas urgentes — últimas 6 horas', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
+                Text('Alertas urgentes', style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 12)),
               ],
             ),
           ),
@@ -184,9 +208,12 @@ class _MascotasPageState extends State<MascotasPage> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: alertas.length,
+              itemCount: perdidos.length,
               itemBuilder: (context, index) {
-                final alerta = alertas[index];
+                final data = perdidos[index].data() as Map<String, dynamic>;
+                final imgUrl = data['imagen'] as String? ?? '';
+                final nombre = data['nombre'] as String? ?? 'Mascota';
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Column(
@@ -195,20 +222,23 @@ class _MascotasPageState extends State<MascotasPage> {
                         width: 62, height: 62,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: alerta['color'] as Color, width: 2),
-                          image: DecorationImage(image: AssetImage(alerta['img'] as String), fit: BoxFit.cover),
+                          border: Border.all(color: AppTheme.danger, width: 2),
+                          image: DecorationImage(
+                            image: imgUrl.isNotEmpty ? NetworkImage(imgUrl) : const AssetImage('assets/perro.jpeg') as ImageProvider, 
+                            fit: BoxFit.cover
+                          ),
                         ),
                         child: Align(
                           alignment: Alignment.bottomRight,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                            child: Text(alerta['tiempo'] as String, style: GoogleFonts.inter(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold)),
+                            child: Text('Perdido', style: GoogleFonts.inter(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(alerta['nombre'] as String, style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 11)),
+                      Text(nombre, style: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 11)),
                     ],
                   ),
                 );
@@ -257,14 +287,33 @@ class _PremiumPetCard extends StatelessWidget {
     final String statusText = perdida ? 'PERDIDO' : 'ENCONTRADA';
     final String statusDesc = perdida ? 'Perdido · hace poco' : 'Encontrada · esperando dueño';
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.bgDeep, // Un tono ligeramente más claro que bgDark
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border, width: 1),
-      ),
-      child: Column(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetallesAnimalesPerdidos(
+              ubicacionPerdida: data['ubicacionPerdida'] ?? <String, dynamic>{},
+              nombre: nombre,
+              horaPerdida: data['horaPerdida'] ?? '',
+              fechaPerdida: data['fechaPerdida'] ?? '',
+              descripcion: descripcion,
+              imageUrl: imageUrl,
+              recompensa: recompensa > 0 ? recompensa : null,
+              nombreUsuario: nombreUsuario,
+              idMascota: doc.id,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.bgDeep, // Un tono ligeramente más claro que bgDark
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.border, width: 1),
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header del Card
@@ -412,7 +461,14 @@ class _PremiumPetCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Compartiendo información de $nombre...'),
+                          backgroundColor: AppTheme.accent,
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.share_outlined, size: 18),
                     label: const Text('Compartir'),
                     style: OutlinedButton.styleFrom(
@@ -424,7 +480,17 @@ class _PremiumPetCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(
+                            nombreUsuario: nombreUsuario,
+                            idMascota: doc.id,
+                          ),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),
                     label: const Text('Contactar'),
                     style: OutlinedButton.styleFrom(
@@ -466,6 +532,7 @@ class _PremiumPetCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

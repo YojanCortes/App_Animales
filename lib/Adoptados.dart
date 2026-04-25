@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'Alertas.dart';
 
 class AdoptadosPage extends StatefulWidget {
-  const AdoptadosPage({super.key});
+  final VoidCallback? onMenuTap;
+  const AdoptadosPage({super.key, this.onMenuTap});
 
   @override
   _AdoptadosPageState createState() => _AdoptadosPageState();
@@ -44,6 +45,19 @@ class _AdoptadosPageState extends State<AdoptadosPage> {
         children: [
           Row(
             children: [
+              InkWell(
+                onTap: widget.onMenuTap ?? () {},
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.04),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.menu_rounded, color: Colors.grey, size: 20),
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -128,7 +142,7 @@ class _AdoptadosPageState extends State<AdoptadosPage> {
     ];
 
     return SizedBox(
-      height: 100,
+      height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -387,7 +401,7 @@ class _AdoptadosPageState extends State<AdoptadosPage> {
 
   Widget _buildRefugiosList() {
     return SizedBox(
-      height: 140,
+      height: 170,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -396,7 +410,7 @@ class _AdoptadosPageState extends State<AdoptadosPage> {
           final isFirst = index == 0;
           return Container(
             width: 140,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: cardBg,
@@ -414,7 +428,7 @@ class _AdoptadosPageState extends State<AdoptadosPage> {
                   child: Icon(isFirst ? Icons.maps_home_work_rounded : Icons.pets, color: isFirst ? primaryPurple : Colors.orange, size: 24),
                 ),
                 const Spacer(),
-                Text(isFirst ? 'Refugio Huellas' : 'Patitas Felices', style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(isFirst ? 'Refugio Huellas' : 'Patitas Felices', style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 1),
                 Text(isFirst ? '42 animales' : '28 animales', style: GoogleFonts.inter(color: primaryPurple, fontSize: 11, fontWeight: FontWeight.bold)),
                 Text(isFirst ? '1.4 km' : '2.8 km', style: GoogleFonts.inter(color: Colors.grey, fontSize: 10)),
                 const SizedBox(height: 6),
@@ -426,7 +440,7 @@ class _AdoptadosPageState extends State<AdoptadosPage> {
                     children: [
                       const Icon(Icons.check, color: Color(0xFF00D287), size: 10),
                       const SizedBox(width: 2),
-                      Text('Verificado', style: GoogleFonts.inter(color: const Color(0xFF00D287), fontSize: 9, fontWeight: FontWeight.bold)),
+                      Text('Verificado', style: GoogleFonts.inter(color: Color(0xFF00D287), fontSize: 9, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
