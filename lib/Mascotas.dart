@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:appanimales/theme/app_theme.dart';
+import 'Alertas.dart';
 
 class MascotasPage extends StatefulWidget {
   const MascotasPage({super.key});
@@ -100,14 +101,19 @@ class _MascotasPageState extends State<MascotasPage> {
           ),
           Row(
             children: [
-              Stack(
-                children: [
-                  const Icon(Icons.notifications_none_rounded, color: AppTheme.textMuted),
-                  Positioned(
-                    right: 2, top: 2, 
-                    child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle))
-                  ),
-                ],
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AlertasPage()));
+                },
+                child: Stack(
+                  children: [
+                    const Icon(Icons.notifications_none_rounded, color: AppTheme.textMuted),
+                    Positioned(
+                      right: 2, top: 2, 
+                      child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle))
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 16),
               const Icon(Icons.search_rounded, color: AppTheme.textMuted),

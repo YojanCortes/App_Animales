@@ -12,6 +12,8 @@ import 'EditarPerfil.dart';
 import 'FormularioAdopcion.dart';
 import 'GoogleMap.dart';
 import 'Mascotas.dart';
+import 'Alertas.dart';
+import 'Adoptados.dart';
 import 'MiAdopcionLista.dart';
 import 'MisMascotas.dart';
 import 'package:appanimales/theme/app_theme.dart';
@@ -35,8 +37,10 @@ class _MenuPageState extends State<MenuPage>
   String _currentTab = 'Mapa';
 
   final List<_TabItem> _tabs = const [
-    _TabItem(icon: Icons.grid_view_rounded, label: 'Inicio'),
+    _TabItem(icon: Icons.home_outlined, label: 'Inicio'),
     _TabItem(icon: Icons.my_location_rounded, label: 'Mapa'),
+    _TabItem(icon: Icons.add, label: ''),
+    _TabItem(icon: Icons.maps_home_work_outlined, label: 'Adoptados'),
     _TabItem(icon: Icons.person_outline_rounded, label: 'Perfil'),
   ];
 
@@ -44,7 +48,7 @@ class _MenuPageState extends State<MenuPage>
   void initState() {
     super.initState();
     // Inicia en la pestaña "Mapa" (índice 1) como en la maqueta
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1)
+    _tabController = TabController(length: 5, vsync: this, initialIndex: 1)
       ..addListener(() {
         if (!_tabController.indexIsChanging) {
           setState(() => _currentTab = _tabs[_tabController.index].label);
@@ -129,7 +133,9 @@ class _MenuPageState extends State<MenuPage>
         return const MascotasPage();
       case 1:
         return GoogleMapPage(initialPosition: const LatLng(-33.0458, -71.6197));
-      case 2:
+      case 3:
+        return const AdoptadosPage();
+      case 4:
         return const ListaAnimalesAdopcion();
       default:
         return const SizedBox.shrink();
@@ -281,7 +287,9 @@ class _MenuPageState extends State<MenuPage>
                 children: [
                   _buildPage(0),
                   _buildPage(1),
-                  _buildPage(2),
+                  const SizedBox.shrink(),
+                  _buildPage(3),
+                  _buildPage(4),
                 ],
               ),
             ),
@@ -297,6 +305,22 @@ class _MenuPageState extends State<MenuPage>
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: List.generate(_tabs.length, (index) {
                   final t = _tabs[index];
+                  
+                  if (index == 2) {
+                    return GestureDetector(
+                      onTap: () => _navigate(AgregarMascotaPage()),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(color: AppTheme.accent),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.add, color: AppTheme.accent, size: 24),
+                      ),
+                    );
+                  }
+
                   final isSelected = _tabController.index == index;
                   final color = isSelected ? AppTheme.accent : AppTheme.textFaint;
                   return GestureDetector(
